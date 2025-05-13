@@ -21,14 +21,15 @@ import java.util.List;
 public class QuestionController {
     QuestionService questionService;
 
-    @GetMapping
+    @PostMapping
     public ResponseEntity<List<OpenTriviaQuestionResponse>> getQuestions(@RequestBody GetQuestionRequest request) {
         log.info("Fetching questions with: amount={}, difficulty={}, category={}",
                 request.getAmount(), request.getDifficulty(), request.getCategory());
 
-        List<OpenTriviaQuestionResponse> questions = questionService.fetchAndReturnQuestions(
+        List<OpenTriviaQuestionResponse> questions = questionService.fetchAndReturnQuestions("hieuhieu",
                 request.getAmount(), request.getDifficulty(), request.getCategory()
         );
+        log.info("Fetched {} questions", questions.size());
 
         return ResponseEntity.ok(questions);
     }
