@@ -1,10 +1,7 @@
 package com.example.studyE.Entity;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -20,9 +17,11 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
     Long id;
-
+    String name;
     String username;
     String email;
     String passwordHash;
+    @Column(unique = true)
+    private String uid;
 
 }
