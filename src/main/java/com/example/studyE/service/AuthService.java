@@ -1,6 +1,6 @@
 package com.example.studyE.service;
 
-import com.example.studyE.Entity.User;
+import com.example.studyE.entity.User;
 import com.example.studyE.dto.response.UserResponse;
 import com.example.studyE.exception.AppException;
 import com.example.studyE.exception.ErrorCode;

@@ -1,8 +1,10 @@
-package com.example.studyE.Entity;
+package com.example.studyE.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -11,20 +13,20 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-
-@Table(name = "question_option")
-
-public class Option {
+@Table(name = "user_question_history")
+public class UserQuestionHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    String content;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "user_id")
+    User user;
 
-    Boolean isCorrect;
-
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "question_id")
     Question question;
+
+    LocalDateTime seenAt = LocalDateTime.now();
 }
