@@ -1,12 +1,15 @@
-HELP.md
+# Ignore built artifacts
 target/
-!.mvn/wrapper/maven-wrapper.jar
+build/
 !**/src/main/**/target/
 !**/src/test/**/target/
-src/main/resources/application.yaml
+!**/src/main/**/build/
+!**/src/test/**/build/
 
+# Ignore Maven wrapper jar
+!.mvn/wrapper/maven-wrapper.jar
 
-### STS ###
+# Ignore Eclipse/STS
 .apt_generated
 .classpath
 .factorypath
@@ -15,21 +18,24 @@ src/main/resources/application.yaml
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-.idea
+# IntelliJ IDEA
+.idea/
 *.iws
 *.iml
 *.ipr
 
-### NetBeans ###
+# NetBeans
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
+# VS Code
 .vscode/
+
+# Application config (manually managed)
+src/main/resources/application.yaml
+
+# Firebase secrets (important!)
+src/main/resources/firebase/*.json
