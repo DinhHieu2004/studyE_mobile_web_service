@@ -1,7 +1,7 @@
 package com.example.studyE.repository;
 
-import com.example.studyE.Entity.Question;
-import com.example.studyE.Entity.UserQuestionHistory;
+import com.example.studyE.entity.Question;
+import com.example.studyE.entity.UserQuestionHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
