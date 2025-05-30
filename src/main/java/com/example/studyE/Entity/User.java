@@ -22,6 +22,6 @@ public class User {
     String email;
     String passwordHash;
     @Column(unique = true)
-    private String uid;
+    String uid;
 
 }
