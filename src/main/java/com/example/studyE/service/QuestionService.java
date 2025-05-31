@@ -1,9 +1,9 @@
 package com.example.studyE.service;
 
-import com.example.studyE.Entity.Option;
-import com.example.studyE.Entity.Question;
-import com.example.studyE.Entity.User;
-import com.example.studyE.Entity.UserQuestionHistory;
+import com.example.studyE.entity.Option;
+import com.example.studyE.entity.Question;
+import com.example.studyE.entity.User;
+import com.example.studyE.entity.UserQuestionHistory;
 import com.example.studyE.dto.response.OpenTriviaQuestionResponse;
 import com.example.studyE.dto.response.OpenTriviaResponse;
 import com.example.studyE.exception.AppException;

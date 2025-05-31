@@ -1,4 +1,4 @@
-package com.example.studyE.Entity;
+package com.example.studyE.entity;
 
 
 import jakarta.persistence.*;
@@ -16,11 +16,18 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
-    Long id;
-    String name;
-    String username;
-    String email;
-    String passwordHash;
+    private Long id;
+
+    private String name;
+
+    private String username;
+
+    private String password;
+
+    private String passwordHash;
+
+    private String email;
+
     @Column(unique = true)
     String uid;
 
