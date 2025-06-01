@@ -13,6 +13,8 @@ public class LessionMapper {
                 .description(lession.getDescription())
                 .level(lession.getLevel())
                 .imageUrl(lession.getImageUrl())
+                .topicId(lession.getTopic().getId())
+                .topicName(lession.getTopic().getName())
                 .build();
     }
 
