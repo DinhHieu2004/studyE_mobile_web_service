@@ -1,5 +1,6 @@
 package com.example.studyE.exception;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
@@ -12,17 +13,23 @@ public enum ErrorCode {
     USER_NOT_EXISTED(1005, "User not existed", HttpStatus.NOT_FOUND),
     UNAUTHENTICATED(1006, "Unauthenticated", HttpStatus.UNAUTHORIZED),
 
+    LESSON_NOT_FOUND(2001, "Lession not found", HttpStatus.NOT_FOUND),
+    TOPIC_NOT_FOUND(2002, "Topic not found", HttpStatus.NOT_FOUND),
+    VOCABULARY_NOT_FOUND(2003, "Vocabulary not found", HttpStatus.NOT_FOUND),
 
-    ;
-    ErrorCode(int code, String msg, HttpStatus httpStatus) {
-        this.code = code;
-        this.message = msg;
-        this.httpStatus = httpStatus;
-    }
+    DIALOG_NOT_FOUND(3001, "Dialog not found", HttpStatus.NOT_FOUND),
+
+    PROGRESS_NOT_FOUND(4001, "User progress not found", HttpStatus.NOT_FOUND),
+
+    FIREBASE_TOKEN_INVALID(5001, "Invalid Firebase token", HttpStatus.UNAUTHORIZED);
 
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;
 
-
+    ErrorCode(int code, String msg, HttpStatus httpStatus) {
+        this.code = code;
+        this.message = msg;
+        this.httpStatus = httpStatus;
+    }
 }

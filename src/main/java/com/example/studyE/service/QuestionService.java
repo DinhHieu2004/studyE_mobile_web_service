@@ -44,7 +44,7 @@ public class QuestionService {
 
 
     public List<OpenTriviaQuestionResponse> fetchAndReturnQuestions(long userId, int amount, String difficulty, String category) {
-        User user = userRepository.findById(userId)
+        com.example.studyE.Entity.User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         Set<String> answeredQuestionContents = new HashSet<>(answerDetailRepository.findAnsweredQuestionTextsByUserId(userId));
@@ -79,15 +79,15 @@ public class QuestionService {
             if (question == null) {
                 question = questionMapper.toEntity(dto);
 
-                List<Option> options = new ArrayList<>();
-                options.add(Option.builder()
+                List<com.example.studyE.Entity.Option> options = new ArrayList<>();
+                options.add(com.example.studyE.Entity.Option.builder()
                         .content(HtmlUtils.htmlUnescape(dto.getCorrectAnswer()))
                         .question(question)
                         .isCorrect(true)
                         .build());
 
                 for (String incorrect : dto.getIncorrectAnswers()) {
-                    options.add(Option.builder()
+                    options.add(com.example.studyE.Entity.Option.builder()
                             .content(HtmlUtils.htmlUnescape(incorrect))
                             .question(question)
                             .isCorrect(false)
@@ -114,10 +114,10 @@ public class QuestionService {
         LocalDateTime start = startDate.atStartOfDay();
         LocalDateTime end = endDate.atTime(23, 59, 59);
 
-        List<QuizResult> list =quizResultRepository.findAllByUserIdAndTimestampBetween(userId, start, end);
+        List<com.example.studyE.Entity.QuizResult> list =quizResultRepository.findAllByUserIdAndTimestampBetween(userId, start, end);
 
         return list.stream().map(quizResultMapper::toQuizResultResponse)
-                        .collect(Collectors.toList());
+                .collect(Collectors.toList());
 
     }
 

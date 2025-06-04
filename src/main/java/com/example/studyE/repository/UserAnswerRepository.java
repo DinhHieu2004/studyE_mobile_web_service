@@ -1,6 +1,6 @@
 package com.example.studyE.repository;
 
-import com.example.studyE.Entity.UserAnswer;
+import com.example.studyE.entity.UserAnswer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

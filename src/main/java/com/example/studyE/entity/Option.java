@@ -1,10 +1,8 @@
-package com.example.studyE.Entity;
+package com.example.studyE.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -14,22 +12,19 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 
-public class UserAnswer {
+@Table(name = "question_option")
+
+public class Option {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    String selectedAnswer;
-    Boolean isCorrect;
-    LocalDateTime answeredAt;
+    String content;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    User user;
+    Boolean isCorrect;
 
     @ManyToOne
     @JoinColumn(name = "question_id")
     Question question;
-
 }
