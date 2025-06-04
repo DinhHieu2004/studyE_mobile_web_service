@@ -1,9 +1,11 @@
 package com.example.studyE.service;
 
-import com.example.studyE.Entity.*;
 import com.example.studyE.dto.response.OpenTriviaQuestionResponse;
 import com.example.studyE.dto.response.OpenTriviaResponse;
 import com.example.studyE.dto.response.QuizResultResponse;
+import com.example.studyE.entity.Option;
+import com.example.studyE.entity.Question;
+import com.example.studyE.entity.User;
 import com.example.studyE.exception.AppException;
 import com.example.studyE.exception.ErrorCode;
 import com.example.studyE.mapper.QuestionMapper;
@@ -44,7 +46,7 @@ public class QuestionService {
 
 
     public List<OpenTriviaQuestionResponse> fetchAndReturnQuestions(long userId, int amount, String difficulty, String category) {
-        com.example.studyE.Entity.User user = userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         Set<String> answeredQuestionContents = new HashSet<>(answerDetailRepository.findAnsweredQuestionTextsByUserId(userId));
@@ -79,15 +81,15 @@ public class QuestionService {
             if (question == null) {
                 question = questionMapper.toEntity(dto);
 
-                List<com.example.studyE.Entity.Option> options = new ArrayList<>();
-                options.add(com.example.studyE.Entity.Option.builder()
+                List<Option> options = new ArrayList<>();
+                options.add(Option.builder()
                         .content(HtmlUtils.htmlUnescape(dto.getCorrectAnswer()))
                         .question(question)
                         .isCorrect(true)
                         .build());
 
                 for (String incorrect : dto.getIncorrectAnswers()) {
-                    options.add(com.example.studyE.Entity.Option.builder()
+                    options.add(Option.builder()
                             .content(HtmlUtils.htmlUnescape(incorrect))
                             .question(question)
                             .isCorrect(false)

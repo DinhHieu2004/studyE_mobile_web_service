@@ -13,3 +13,8 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+cloudinary:
+  cloud_name: dz32nqnp3
+  api_key: 535356454445185
+  api_secret: RgLQQ17SP4en8Zcq1vxYeldQ7yI
