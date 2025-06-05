@@ -1,10 +1,12 @@
 package com.example.studyE.service;
 
+import com.example.studyE.dto.request.TokenRequest;
+import com.example.studyE.dto.response.AuthenResponse;
 import com.example.studyE.entity.User;
-import com.example.studyE.dto.response.UserResponse;
 import com.example.studyE.exception.AppException;
 import com.example.studyE.exception.ErrorCode;
 import com.example.studyE.repository.UserRepository;
+import com.example.studyE.util.JwtUtil;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
@@ -21,19 +23,23 @@ import java.util.Optional;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class AuthService {
-    private UserRepository userRepository;
+    UserRepository userRepository;
+    JwtUtil jwtUtil;
 
-    public UserResponse loginWithToken(String idToken) throws FirebaseAuthException {
-        FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
+    public AuthenResponse loginWithToken(TokenRequest tokenRequest) throws FirebaseAuthException {
+        FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(tokenRequest.getIdToken());
         String uid = decodedToken.getUid();
         Optional<User> optionalUser = userRepository.findByUid(uid);
         User user = optionalUser.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        return UserResponse.builder()
-                .userId(user.getId())
-                .uid(user.getUid())
-                .email(user.getEmail())
-                .name(user.getName())
+        String token = jwtUtil.generateToken(user);
+
+
+
+        log.info("token: {}", token);
+
+        return AuthenResponse.builder()
+                .token(token)
                 .build();
     }
 }
