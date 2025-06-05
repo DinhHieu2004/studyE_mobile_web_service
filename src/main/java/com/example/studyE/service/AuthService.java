@@ -1,9 +1,8 @@
 package com.example.studyE.service;
 
 import com.example.studyE.dto.request.TokenRequest;
-import com.example.studyE.dto.response.AuthenReponse;
+import com.example.studyE.dto.response.AuthenResponse;
 import com.example.studyE.entity.User;
-import com.example.studyE.dto.response.UserResponse;
 import com.example.studyE.exception.AppException;
 import com.example.studyE.exception.ErrorCode;
 import com.example.studyE.repository.UserRepository;
@@ -27,7 +26,7 @@ public class AuthService {
     UserRepository userRepository;
     JwtUtil jwtUtil;
 
-    public AuthenReponse loginWithToken( TokenRequest tokenRequest) throws FirebaseAuthException {
+    public AuthenResponse loginWithToken(TokenRequest tokenRequest) throws FirebaseAuthException {
         FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(tokenRequest.getIdToken());
         String uid = decodedToken.getUid();
         Optional<User> optionalUser = userRepository.findByUid(uid);
@@ -39,7 +38,7 @@ public class AuthService {
 
         log.info("token: {}", token);
 
-        return AuthenReponse.builder()
+        return AuthenResponse.builder()
                 .token(token)
                 .build();
     }

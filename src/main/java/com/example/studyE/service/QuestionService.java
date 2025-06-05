@@ -5,12 +5,14 @@ import com.example.studyE.dto.response.OpenTriviaResponse;
 import com.example.studyE.dto.response.QuizResultResponse;
 import com.example.studyE.entity.Option;
 import com.example.studyE.entity.Question;
+import com.example.studyE.entity.QuizResult;
 import com.example.studyE.entity.User;
 import com.example.studyE.exception.AppException;
 import com.example.studyE.exception.ErrorCode;
 import com.example.studyE.mapper.QuestionMapper;
 import com.example.studyE.mapper.QuizResultMapper;
 import com.example.studyE.repository.*;
+import com.example.studyE.util.JwtUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -18,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.HtmlUtils;
@@ -45,9 +48,10 @@ public class QuestionService {
 
 
 
-    public List<OpenTriviaQuestionResponse> fetchAndReturnQuestions(long userId, int amount, String difficulty, String category) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+    public List<OpenTriviaQuestionResponse> fetchAndReturnQuestions( int amount, String difficulty, String category) {
+
+        Long userId = JwtUtil.getUserIdFromToken();
+
 
         Set<String> answeredQuestionContents = new HashSet<>(answerDetailRepository.findAnsweredQuestionTextsByUserId(userId));
 
@@ -111,12 +115,13 @@ public class QuestionService {
         return finalQuestions;
     }
 
-    public List<QuizResultResponse> getQuizHistoryUser(long userId, LocalDate startDate, LocalDate endDate) {
+    public List<QuizResultResponse> getQuizHistoryUser(LocalDate startDate, LocalDate endDate) {
+        Long userId = JwtUtil.getUserIdFromToken();
 
         LocalDateTime start = startDate.atStartOfDay();
         LocalDateTime end = endDate.atTime(23, 59, 59);
 
-        List<com.example.studyE.Entity.QuizResult> list =quizResultRepository.findAllByUserIdAndTimestampBetween(userId, start, end);
+        List<QuizResult> list =quizResultRepository.findAllByUserIdAndTimestampBetween(userId, start, end);
 
         return list.stream().map(quizResultMapper::toQuizResultResponse)
                 .collect(Collectors.toList());

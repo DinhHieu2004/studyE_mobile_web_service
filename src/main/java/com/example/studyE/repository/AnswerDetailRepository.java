@@ -1,7 +1,7 @@
 package com.example.studyE.repository;
 
 
-import com.example.studyE.Entity.AnswerDetail;
+import com.example.studyE.entity.AnswerDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

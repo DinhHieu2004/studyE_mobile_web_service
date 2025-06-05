@@ -15,15 +15,14 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Map;
 
 public class JwtAuthFilter  extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
 
     public JwtAuthFilter(JwtUtil jwtUtil, UserRepository userRepository) {
         this.jwtUtil = jwtUtil;
-        this.userRepository = userRepository;
     }
 
     @Override
@@ -34,18 +33,33 @@ public class JwtAuthFilter  extends OncePerRequestFilter {
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
 
-            if (jwtUtil.validateToken(token)) {
-                String uid = jwtUtil.getUidFromToken(token);
-                User user = userRepository.findByUid(uid)
-                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+            try {
+                if (jwtUtil.validateToken(token)) {
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
+                    String userId = jwtUtil.getUserIdFromToken(token);
+                    String email = jwtUtil.getEmailFromToken(token);
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    Map<String, Object> principal = Map.of(
+                            "userId", userId,
+                            "email", email
+                    );
+
+
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList());
+
+
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            }else{
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+                return;
             }
+        }catch(RuntimeException e){
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
+            return;
         }
-
+    }
         filterChain.doFilter(request, response);
     }
 }

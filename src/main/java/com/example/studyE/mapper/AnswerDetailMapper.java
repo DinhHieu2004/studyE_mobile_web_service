@@ -1,6 +1,6 @@
 package com.example.studyE.mapper;
 
-import com.example.studyE.Entity.AnswerDetail;
+import com.example.studyE.entity.AnswerDetail;
 import com.example.studyE.dto.response.AnswerDetailResponse;
 import org.mapstruct.Mapper;
 

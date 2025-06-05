@@ -1,4 +1,4 @@
-package com.example.studyE.Entity;
+package com.example.studyE.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,6 +32,6 @@ public class AnswerDetail {
 
     @ManyToOne
     @JoinColumn(name = "quiz_result_id")
-    private QuizResult quizResult;
+    QuizResult quizResult;
 
 }

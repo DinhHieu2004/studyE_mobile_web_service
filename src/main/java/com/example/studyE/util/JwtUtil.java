@@ -3,11 +3,13 @@ package com.example.studyE.util;
 import com.example.studyE.entity.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+import java.util.Map;
 
 @Component
 public class JwtUtil {
@@ -23,6 +25,7 @@ public class JwtUtil {
                 .setSubject(user.getUid())
                 .claim("email", user.getEmail())
                 .claim("name", user.getName())
+                .claim("userId", user.getId())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(key, SignatureAlgorithm.HS512)
@@ -38,6 +41,19 @@ public class JwtUtil {
                 .getSubject();
     }
 
+    public String getUserIdFromToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            return String.valueOf(claims.get("userId", Long.class));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to extract userId from token", e);
+        }
+    }
+
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
@@ -46,4 +62,31 @@ public class JwtUtil {
             return false;
         }
     }
+
+    public String getEmailFromToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            return claims.get("email", String.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to extract userId from token", e);
+        }
+    }
+
+    public static Long getUserIdFromToken(){
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof Map) {
+            Map<String, Object> userDetails = (Map<String, Object>) principal;
+            String userIdStr = userDetails.get("userId").toString();
+            Long userId = Long.valueOf(userIdStr);
+
+           return userId;
+        }
+        return null;
+    }
+
 }

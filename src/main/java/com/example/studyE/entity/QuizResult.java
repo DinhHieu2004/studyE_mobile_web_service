@@ -1,4 +1,4 @@
-package com.example.studyE.Entity;
+package com.example.studyE.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -31,7 +31,7 @@ public class QuizResult {
     LocalDateTime timestamp;
 
     @OneToMany(mappedBy = "quizResult", cascade = CascadeType.ALL)
-    private List<com.example.studyE.Entity.AnswerDetail> answers;
+    private List<AnswerDetail> answers;
 
 
 }

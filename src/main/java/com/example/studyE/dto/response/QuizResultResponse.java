@@ -1,8 +1,6 @@
 package com.example.studyE.dto.response;
 
-import com.example.studyE.Entity.AnswerDetail;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.OneToMany;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

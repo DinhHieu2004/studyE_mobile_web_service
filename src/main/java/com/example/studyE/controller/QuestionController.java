@@ -30,7 +30,7 @@ public class QuestionController {
         log.info("Fetching questions with: amount={}, difficulty={}, category={}",
                 request.getAmount(), request.getDifficulty(), request.getCategory());
 
-        List<OpenTriviaQuestionResponse> questions = questionService.fetchAndReturnQuestions(1L,
+        List<OpenTriviaQuestionResponse> questions = questionService.fetchAndReturnQuestions(
                 request.getAmount(), request.getDifficulty(), request.getCategory()
         );
         log.info("Fetched {} questions", questions.size());
@@ -43,6 +43,6 @@ public class QuestionController {
                                                                    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate end) {
         log.info("Fetching quiz results");
         long userId = 1L;
-        return ResponseEntity.ok(questionService.getQuizHistoryUser(userId, start, end));
+        return ResponseEntity.ok(questionService.getQuizHistoryUser(start, end));
     }
 }

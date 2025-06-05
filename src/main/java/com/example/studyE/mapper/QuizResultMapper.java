@@ -1,8 +1,8 @@
 package com.example.studyE.mapper;
 
 
-import com.example.studyE.Entity.AnswerDetail;
-import com.example.studyE.Entity.QuizResult;
+import com.example.studyE.entity.AnswerDetail;
+import com.example.studyE.entity.QuizResult;
 import com.example.studyE.dto.request.AnswerDetailRequest;
 import com.example.studyE.dto.request.QuizResultRequest;
 import com.example.studyE.dto.response.QuizResultResponse;

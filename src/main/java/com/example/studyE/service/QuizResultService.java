@@ -1,15 +1,17 @@
 package com.example.studyE.service;
 
 
-import com.example.studyE.Entity.AnswerDetail;
-import com.example.studyE.Entity.QuizResult;
 import com.example.studyE.dto.request.QuizResultRequest;
+import com.example.studyE.entity.AnswerDetail;
+import com.example.studyE.entity.QuizResult;
 import com.example.studyE.mapper.QuizResultMapper;
 import com.example.studyE.repository.QuizResultRepository;
+import com.example.studyE.util.JwtUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,6 +29,8 @@ public class QuizResultService {
 
     public void saveQuizResult(QuizResultRequest dto) {
 
+        Long userId = JwtUtil.getUserIdFromToken();
+
         QuizResult quizResult = mapper.toEntity(dto);
 
         List<AnswerDetail> answerEntities = dto.getAnswers().stream()
@@ -38,7 +42,7 @@ public class QuizResultService {
                 .collect(Collectors.toList());
 
         quizResult.setAnswers(answerEntities);
-        quizResult.setUserId(2L);
+        quizResult.setUserId(userId);
 
         quizResultRepository.save(quizResult);
     }

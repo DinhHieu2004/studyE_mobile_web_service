@@ -4,10 +4,12 @@ import com.example.studyE.dto.response.CategoryStatsResponse;
 import com.example.studyE.dto.response.ProgressStatsResponse;
 import com.example.studyE.dto.response.StatisticsResponse;
 import com.example.studyE.repository.AnswerDetailRepository;
+import com.example.studyE.util.JwtUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -23,7 +25,11 @@ public class StatisticsService {
     AnswerDetailRepository answerDetailRepository;
 
     public StatisticsResponse getUserStatistics() {
-        Long userId = 1L;
+
+        Long userId = JwtUtil.getUserIdFromToken();
+
+        log.info("userId: "+ userId);
+
         List<Object[]> results = answerDetailRepository.getUserStats(userId);
 
         Object[] result = results.get(0);

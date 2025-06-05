@@ -1,7 +1,6 @@
 package com.example.studyE.controller;
 
 
-import com.example.studyE.Entity.QuizResult;
 import com.example.studyE.dto.request.QuizResultRequest;
 import com.example.studyE.dto.response.ApiResponse;
 import com.example.studyE.service.QuizResultService;
