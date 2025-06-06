@@ -1,61 +1,122 @@
 package com.example.studyE.service;
 
 import com.example.studyE.dto.response.DictionaryResponse;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class DictionaryService {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final String dictionaryApiUrl = "https://api.dictionaryapi.dev/api/v2/entries/en/";
-    private final String myMemoryTranslateUrl = "https://api.mymemory.translated.net/get";
+    private final String geminiApiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
+    private final String geminiApiKey = "AIzaSyAGsAZmerAMMx-bpEVYi22tvIWeq__GbOY";
 
     public DictionaryResponse lookupWordWithVietnamese(String word) {
-        // 1. Gọi API từ điển
         DictionaryResponse[] dictionaryResponses = restTemplate.getForObject(dictionaryApiUrl + word, DictionaryResponse[].class);
-
         if (dictionaryResponses == null || dictionaryResponses.length == 0) {
             return null;
         }
 
         DictionaryResponse response = dictionaryResponses[0];
 
-        // 2. Dịch từng definition & example sang tiếng Việt
+        List<String> textsToTranslate = new ArrayList<>();
+
+        // Map lưu vị trí dịch cho từng Definition
+        // value là int[2] = {posDefinition, posExample} (-1 nếu không có)
+        Map<DictionaryResponse.Definition, int[]> defToPositions = new HashMap<>();
+
+        int idx = 0;
         for (DictionaryResponse.Meaning meaning : response.getMeanings()) {
             for (DictionaryResponse.Definition def : meaning.getDefinitions()) {
-                if (def.getDefinition() != null && !def.getDefinition().isEmpty()) {
-                    def.setVietnameseDefinition(translate(def.getDefinition()));
+                int posDef = -1;
+                int posExample = -1;
+
+                if (def.getDefinition() != null) {
+                    textsToTranslate.add(def.getDefinition());
+                    posDef = idx++;
                 }
-                if (def.getExample() != null && !def.getExample().isEmpty()) {
-                    def.setVietnameseExample(translate(def.getExample()));
+                if (def.getExample() != null) {
+                    textsToTranslate.add(def.getExample());
+                    posExample = idx++;
                 }
+
+                defToPositions.put(def, new int[]{posDef, posExample});
+            }
+        }
+
+        List<String> translated = translateBatchWithGemini(textsToTranslate);
+
+        for (Map.Entry<DictionaryResponse.Definition, int[]> entry : defToPositions.entrySet()) {
+            DictionaryResponse.Definition def = entry.getKey();
+            int[] positions = entry.getValue();
+
+            if (positions[0] != -1 && positions[0] < translated.size()) {
+                def.setVietnameseDefinition(translated.get(positions[0]));
+            }
+            if (positions[1] != -1 && positions[1] < translated.size()) {
+                def.setVietnameseExample(translated.get(positions[1]));
             }
         }
 
         return response;
     }
 
-    private String translate(String text) {
-        try {
-            // Encode URL cho text
-            String encodedText = java.net.URLEncoder.encode(text, "UTF-8");
-            String url = myMemoryTranslateUrl + "?q=" + encodedText + "&langpair=en|vi";
 
-            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+
+    private List<String> translateBatchWithGemini(List<String> texts) {
+        try {
+            if (texts.isEmpty()) return List.of();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            StringBuilder prompt = new StringBuilder("Dịch sang tiếng Việt và giữ đúng thứ tự:\n");
+            for (int i = 0; i < texts.size(); i++) {
+                prompt.append(i + 1).append(". ").append(texts.get(i)).append("\n");
+            }
+
+            Map<String, Object> payload = Map.of(
+                    "contents", List.of(Map.of(
+                            "parts", List.of(Map.of("text", prompt.toString()))
+                    ))
+            );
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
+
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                    geminiApiUrl + geminiApiKey, request, Map.class
+            );
+
             if (response.getStatusCode().is2xxSuccessful()) {
-                Map<String, Object> body = response.getBody();
-                if (body != null && body.containsKey("responseData")) {
-                    Map<String, Object> responseData = (Map<String, Object>) body.get("responseData");
-                    return (String) responseData.get("translatedText");
+                Map body = response.getBody();
+                var candidates = (List<Map>) body.get("candidates");
+                if (candidates != null && !candidates.isEmpty()) {
+                    var content = (Map<String, Object>) candidates.get(0).get("content");
+                    var parts = (List<Map<String, Object>>) content.get("parts");
+                    String fullText = (String) parts.get(0).get("text");
+
+                    // Parse theo dòng bắt đầu bằng số thứ tự: 1. ... 2. ...
+                    List<String> results = new ArrayList<>();
+                    for (String line : fullText.split("\n")) {
+                        if (line.matches("^\\d+\\.\\s+.*")) {
+                            results.add(line.replaceFirst("^\\d+\\.\\s+", "").trim());
+                        }
+                    }
+                    return results;
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+
+        return Collections.nCopies(texts.size(), ""); // fallback nếu lỗi
     }
+
 }
