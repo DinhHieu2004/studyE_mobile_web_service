@@ -51,6 +51,39 @@ public class LessionServiceImpl implements LessionService {
     }
 
     @Override
+    public List<LessionResponse> getAllLessions() {
+        return lessionRepository.findAll()
+                .stream()
+                .map(LessionMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<LessionResponse> searchLessionsByTitle(String keyword) {
+        return List.of();
+    }
+
+    @Override
+    public List<LessionResponse> getRecentLessions(int limit) {
+        return List.of();
+    }
+
+    @Override
+    public PageResponse<LessionResponse> getLessionsByTopicAndKeyword(Long topicId, String keyword, int page, int size) {
+        return null;
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        return lessionRepository.existsById(id);
+    }
+
+    @Override
+    public long countLessionsByTopic(Long topicId) {
+        return 0;
+    }
+
+    @Override
     public LessionResponse getLessionById(Long id) {
         Lession lession = lessionRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.LESSON_NOT_FOUND, "Lession not found with id = " + id));
