@@ -1,8 +1,13 @@
 package com.example.studyE.service;
 
+import com.example.studyE.dto.request.PostUserRequest;
+
+import com.example.studyE.dto.response.UserResponse;
+
 import com.example.studyE.dto.request.TokenRequest;
 import com.example.studyE.dto.response.AuthenResponse;
 import com.example.studyE.entity.User;
+
 import com.example.studyE.exception.AppException;
 import com.example.studyE.exception.ErrorCode;
 import com.example.studyE.repository.UserRepository;
@@ -41,5 +46,22 @@ public class AuthService {
         return AuthenResponse.builder()
                 .token(token)
                 .build();
+    }
+
+    public void registerFirebaseUser(PostUserRequest request) {
+        if (request.getUid() == null || request.getEmail() == null || request.getName() == null) {
+            throw new IllegalArgumentException("Thông tin đăng ký không đầy đủ");
+        }
+
+        if (userRepository.existsByUid(request.getUid())) {
+            throw new IllegalArgumentException("Người dùng đã tồn tại");
+        }
+
+        User user = new User();
+        user.setUid(request.getUid());
+        user.setEmail(request.getEmail());
+        user.setName(request.getName());
+
+        userRepository.save(user);
     }
 }
