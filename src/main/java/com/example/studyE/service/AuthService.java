@@ -35,8 +35,18 @@ public class AuthService {
         FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(tokenRequest.getIdToken());
         String uid = decodedToken.getUid();
         Optional<User> optionalUser = userRepository.findByUid(uid);
-        User user = optionalUser.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User user;
 
+        if (optionalUser.isEmpty()) {
+            user = new User();
+            user.setUid(uid);
+            user.setEmail(decodedToken.getEmail());
+            user.setName(decodedToken.getName());
+
+            userRepository.save(user);
+        } else {
+            user = optionalUser.get();
+        }
         String token = jwtUtil.generateToken(user);
 
 
