@@ -1,6 +1,10 @@
 package com.example.studyE.service;
 
 import com.example.studyE.dto.response.DictionaryResponse;
+import com.example.studyE.entity.Dictionary;
+import com.example.studyE.repository.DictionaryRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -14,11 +18,26 @@ import java.util.*;
 public class DictionaryService {
 
     private final RestTemplate restTemplate = new RestTemplate();
+    private final DictionaryRepository dictionaryRepository;
     private final String dictionaryApiUrl = "https://api.dictionaryapi.dev/api/v2/entries/en/";
     private final String geminiApiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
     private final String geminiApiKey = "AIzaSyAGsAZmerAMMx-bpEVYi22tvIWeq__GbOY";
 
+    @Autowired
+    public DictionaryService(DictionaryRepository dictionaryRepository) {
+        this.dictionaryRepository = dictionaryRepository;
+    }
     public DictionaryResponse lookupWordWithVietnamese(String word) {
+
+        Optional<Dictionary> cached = dictionaryRepository.findByWordIgnoreCase(word);
+        if (cached.isPresent()) {
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                return mapper.readValue(cached.get().getResponseJson(), DictionaryResponse.class);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         DictionaryResponse[] dictionaryResponses = restTemplate.getForObject(dictionaryApiUrl + word, DictionaryResponse[].class);
         if (dictionaryResponses == null || dictionaryResponses.length == 0) {
             return null;
@@ -65,10 +84,21 @@ public class DictionaryService {
             }
         }
 
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            String json = mapper.writeValueAsString(response);
+            Dictionary dictionary = Dictionary.builder()
+                    .word(word.toLowerCase())
+                    .responseJson(json)
+                    .createdAt(new Date())
+                    .build();
+            dictionaryRepository.save(dictionary);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return response;
     }
-
-
 
     private List<String> translateBatchWithGemini(List<String> texts) {
         try {
