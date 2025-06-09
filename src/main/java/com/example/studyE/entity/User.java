@@ -29,6 +29,6 @@ public class User {
     private String email;
 
     @Column(unique = true)
-    private String uid;
+    String uid;
 
 }

@@ -1,5 +1,6 @@
 package com.example.studyE.controller;
 
+import com.example.studyE.dto.request.PostUserRequest;
 import com.example.studyE.dto.request.TokenRequest;
 import com.example.studyE.dto.response.AuthenResponse;
 import com.example.studyE.service.AuthService;
@@ -26,6 +27,20 @@ public class AuthController {
     public ResponseEntity<AuthenResponse> loginWithToken(@RequestBody TokenRequest tokenRequest) throws FirebaseAuthException {
             return ResponseEntity.ok(authService.loginWithToken(tokenRequest));
 
+    }
+
+    @PostMapping("/signUp")
+    public ResponseEntity<?> signUp(@RequestBody PostUserRequest request) {
+        try {
+            log.info("Registering user with email: {}, uid: {}, name: {}",
+                    request.getEmail(), request.getUid(), request.getName());
+            authService.registerFirebaseUser(request);
+            return ResponseEntity.ok("Đăng ký thành công");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi hệ thống: " + e.getMessage());
+        }
     }
 }
 
