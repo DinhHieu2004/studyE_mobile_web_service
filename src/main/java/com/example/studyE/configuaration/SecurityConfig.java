@@ -23,7 +23,7 @@ public class SecurityConfig {
     private UserRepository userRepository;
 
     private final String[] PUBLIC_POST_API = {"/auth/login", "/auth/register"};
-    private final String[] PUBLIC_GET_API = {"/dictionary/lookup", "/api/lessions", "/api/lessions/*", "/api/dialogs/**"};
+    private final String[] PUBLIC_GET_API = {"/dictionary/lookup", "/api/lessions", "/api/lessions/*", "/api/dialogs/**", "/api/vocabularies/**"};
 
 
     @Bean
