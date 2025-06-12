@@ -74,4 +74,33 @@ public class AuthService {
 
         userRepository.save(user);
     }
+
+    public UserResponse getUserByUid(String uid) {
+        Optional<User> userOpt = userRepository.findByUid(uid);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            return new UserResponse(
+                    user.getEmail(),
+                    user.getName(),
+                    user.getUid(),
+                    user.getPhone(),
+                    user.getDob()
+            );
+        }
+        return null;
+    }
+
+    public void updateUserProfile(UserResponse userDto) {
+        Optional<User> optional = userRepository.findByUid(userDto.getUid());
+        if (optional.isPresent()) {
+            User user = optional.get();
+            user.setEmail(userDto.getEmail());
+            user.setName(userDto.getName());
+            user.setDob(userDto.getDob());
+            user.setPhone(userDto.getPhone());
+            userRepository.save(user);
+        } else {
+            throw new RuntimeException("User not found with UID: " + userDto.getUid());
+        }
+    }
 }
