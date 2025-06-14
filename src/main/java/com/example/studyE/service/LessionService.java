@@ -4,6 +4,8 @@ import com.example.studyE.dto.request.LessionRequest;
 import com.example.studyE.dto.response.LessionResponse;
 import com.example.studyE.dto.response.PageResponse;
 
+import java.util.List;
+
 public interface LessionService {
     LessionResponse getLessionById(Long id);
 
@@ -14,5 +16,14 @@ public interface LessionService {
     void deleteLession(Long id);
 
     PageResponse<LessionResponse> getLessionsByTopic(Long topicId, int page, int size);
+
+
+    List<LessionResponse> getAllLessions();
+// Lấy toàn bộ danh sách bài học, dùng cho admin hoặc dropdown chọn bài
+
+    boolean existsById(Long id);
+// Kiểm tra bài học có tồn tại không (hữu ích khi validate)
+
+
 }
 
