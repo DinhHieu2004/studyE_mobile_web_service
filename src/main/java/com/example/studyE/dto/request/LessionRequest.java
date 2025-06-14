@@ -9,4 +9,5 @@ public class LessionRequest {
     private String level;
     private String imageUrl;
     private Long topicId;
+    private String audioUrl;
 }

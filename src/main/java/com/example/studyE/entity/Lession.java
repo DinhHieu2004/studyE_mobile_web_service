@@ -31,4 +31,7 @@ public class Lession {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "topic_id")
     private Topic topic;
+
+    @Column(name = "audio_url")
+    private String audioUrl;
 }
