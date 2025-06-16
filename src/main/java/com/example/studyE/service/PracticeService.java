@@ -1,134 +1,83 @@
 package com.example.studyE.service;
 
-import com.example.studyE.entity.PartProgress;
-import com.example.studyE.entity.Sentence;
-import com.example.studyE.entity.User;
-import com.example.studyE.entity.UserProgress;
-import com.example.studyE.repository.PartProgressRepository;
-import com.example.studyE.repository.SentenceRepository;
-import com.example.studyE.repository.UserProgressRepository;
-import com.example.studyE.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.studyE.dto.response.PartProgressDTO;
+import com.example.studyE.entity.*;
+import com.example.studyE.repository.*;
+import com.example.studyE.util.JwtUtil;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.HashMap;
+
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+
 
 @Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class PracticeService {
 
-    @Autowired
-    private UserProgressRepository userProgressRepository;
 
-    @Autowired
-    private PartProgressRepository partProgressRepository;
+    PartProgressRepository partProgressRepository;
 
-    @Autowired
-    private SentenceRepository sentenceRepository;
+    SentenceRepository sentenceRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    UserRepository userRepository;
 
-    @Transactional
-    public void savePracticeResult(String userUid, UserProgress progress) {
-        User user = userRepository.findByUid(userUid)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    UserProgressForPronounceRepository userProgressForPronounceRepository;
 
-        Sentence sentence = sentenceRepository.findById((long) progress.getSentence().getId())
-                .orElseThrow(() -> new RuntimeException("Sentence not found"));
 
-        UserProgress userProgress = UserProgress.builder()
-                .user(user)
-                .partId(progress.getPartId())
-                .sentence(sentence)
-                .sentenceContent(progress.getSentenceContent())
-                .userSpeech(progress.getUserSpeech())
-                .score(progress.getScore())
-                .status(progress.getStatus())
-                .isCompleted(progress.getIsCompleted())
-                .timestamp(progress.getTimestamp())
+    public void savePracticeResult(UserProgressForPronounce progress) {
+        System.out.println(progress);
+
+        Long userId = JwtUtil.getUserIdFromToken();
+        User user = userRepository.findById(userId).orElseThrow();
+        Sentence sentence = sentenceRepository.findById(progress.getSentence().getId()).orElseThrow();
+
+        progress.setUser(user);
+        progress.setSentence(sentence);
+        userProgressForPronounceRepository.save(progress);
+    }
+
+    public PartProgressDTO getPartProgress( int part,String level) {
+        Long userId = JwtUtil.getUserIdFromToken();
+        List<Sentence> allSentences = sentenceRepository.findByPartNumberAndLevel(part, level);
+        long total = allSentences.size();
+        long completed = userProgressForPronounceRepository.countByUser_IdAndPartIdAndSentence_LevelAndIsCompletedTrue(userId, part, level);
+
+        double percent = total == 0 ? 0 : ((double) completed / total) * 100;
+
+        return PartProgressDTO.builder()
+                .partNumber(part)
+                .totalSentences((int) total)
+                .completedSentences((int) completed)
+                .completionPercentage(percent)
+                .lastUpdated(System.currentTimeMillis())
                 .build();
-
-        userProgressRepository.save(userProgress);
     }
 
-    public PartProgress getPartProgress(String userUid, Integer partId) {
-        Optional<PartProgress> partProgressOpt = partProgressRepository.findByUserUidAndPartId(userUid, partId);
-        List<Sentence> sentences = sentenceRepository.findByPartNumber(partId, null);
-        int totalSentences = sentences.size();
-        int completedSentences = userProgressRepository.findByUserUidAndPartIdAndIsCompletedTrue(userUid, partId).size();
-        double completionPercentage = totalSentences > 0 ? (completedSentences * 100.0 / totalSentences) : 0;
+    public List<Sentence> getIncompleteSentences(int partId, String level) {
+        Long userId = JwtUtil.getUserIdFromToken();
+        List<Sentence> all = sentenceRepository.findByPartNumberAndLevel(partId, level);
 
-        PartProgress partProgress;
-        if (partProgressOpt.isPresent()) {
-            partProgress = partProgressOpt.get();
-            partProgress.setTotalSentences(totalSentences);
-            partProgress.setCompletedSentences(completedSentences);
-            partProgress.setCompletionPercentage(completionPercentage);
-            partProgress.setLastUpdated(Instant.now());
-        } else {
-            partProgress = PartProgress.builder()
-                    .user(userRepository.findByUid(userUid).orElseThrow(() -> new RuntimeException("User not found")))
-                    .partId(partId)
-                    .partName("Part " + partId)
-                    .totalSentences(totalSentences)
-                    .completedSentences(completedSentences)
-                    .completionPercentage(completionPercentage)
-                    .lastUpdated(Instant.now())
-                    .build();
-        }
-        partProgressRepository.save(partProgress);
-
-        return
-               /**
-                new PartProgress(
-                partProgress.getPartId(),
-                partProgress.getPartName(),
-                partProgress.getTotalSentences(),
-                partProgress.getCompletedSentences(),
-                partProgress.getCompletionPercentage(),
-                partProgress.getLastUpdated().toEpochMilli()
-        )   **/
-              PartProgress.builder()
-                      .id(partProgress.getId())
-                      .partName(partProgress.getPartName())
-                      .totalSentences(partProgress.getTotalSentences())
-                      .completedSentences(partProgress.getCompletedSentences())
-                      .completionPercentage(partProgress.getCompletionPercentage())
-                      .lastUpdated(partProgress.getLastUpdated())
-
-                      .build();
+        return all.stream()
+                .filter(s -> !userProgressForPronounceRepository.existsByUser_IdAndSentence_Id(userId, s.getId()))
+                .peek(s -> {
+                    String context = s.getContent();
+                    if (context != null && context.length() > 3) {
+                        s.setContent(cutString(3, context));
+                    }
+                })
+                .toList();
     }
 
-    public List<Sentence> getIncompleteSentences(String userUid, Integer partId) {
-        List<Sentence> allSentences = sentenceRepository.findByPartNumber(partId, null);
-        List<Long> completedSentenceIds = userProgressRepository
-                .findByUserUidAndPartIdAndIsCompletedTrue(userUid, partId)
-                .stream()
-                .map(up -> up.getSentence().getId())
-                .collect(Collectors.toList());
 
-        return allSentences.stream()
-                .filter(s -> !completedSentenceIds.contains(s.getId()))
-                .map(s ->
-                                //Sentence(s.getId().intValue(), s.getContent())
-                Sentence.builder().
-                        id(s.getId()).
-                        content(s.getContent()).
-                        build()
-
-                )
-                .collect(Collectors.toList());
+    public String cutString(int amount, String text){
+        return text.substring(amount);
     }
 
-    @Transactional
-    public PartProgress updatePartProgress(String userUid, Map<String, Object> progressData) {
-        Integer partId = ((Number) progressData.get("part")).intValue();
-        return getPartProgress(userUid, partId);
-    }
+
 }

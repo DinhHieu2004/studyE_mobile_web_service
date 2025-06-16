@@ -1,62 +1,40 @@
 package com.example.studyE.entity;
 
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
 
-import java.time.Instant;
+
+import jakarta.persistence.*;
+        import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "user_progress")
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
-@AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserProgressForPronounce {
+public class UserProgress {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
-    @ManyToOne
+    private boolean completed;
+
+    private int score;
+
+    @Column(name = "last_studied")
+    private LocalDateTime lastStudied;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    User user;
+    private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "sentence_id")
-    Sentence sentence;
-
-    @Column(length = 1000)
-    String userSpeech;
-
-    int score;
-
-    String status;
-
-    @JsonProperty("isCompleted")
-    boolean isCompleted;
-
-
-    long timestamp;
-
-    int partId;
-
-    @Override
-    public String toString() {
-        return "UserProgress{" +
-                "id=" + id +
-                ", user=" + user +
-                ", sentence=" + sentence +
-                ", userSpeech='" + userSpeech + '\'' +
-                ", score=" + score +
-                ", status='" + status + '\'' +
-                ", isCompleted=" + isCompleted +
-                ", timestamp=" + timestamp +
-                ", partId=" + partId +
-                '}';
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lession_id")
+    private Lession lession;
 }
+
 

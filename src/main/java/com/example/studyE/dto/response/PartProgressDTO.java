@@ -8,8 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class PartProgressDTO {
-    int partId;
-    String partName;
+    int partNumber;
     int totalSentences;
     int completedSentences;
     double completionPercentage;

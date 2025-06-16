@@ -1,6 +1,5 @@
 package com.example.studyE.entity;
 
-package com.example.studyE.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
