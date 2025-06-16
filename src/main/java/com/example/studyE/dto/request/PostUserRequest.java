@@ -1,4 +1,4 @@
-package com.example.studyE.dto.response;
+package com.example.studyE.dto.request;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -8,10 +8,9 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserResponse {
+public class PostUserRequest {
+    String uid;
     String email;
     String name;
-    String uid;
-    String phone;
-    String dob;
+
 }

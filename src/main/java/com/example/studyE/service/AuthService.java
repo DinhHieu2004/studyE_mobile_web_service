@@ -1,8 +1,13 @@
 package com.example.studyE.service;
 
+import com.example.studyE.dto.request.PostUserRequest;
+
+import com.example.studyE.dto.response.UserResponse;
+
 import com.example.studyE.dto.request.TokenRequest;
 import com.example.studyE.dto.response.AuthenResponse;
 import com.example.studyE.entity.User;
+
 import com.example.studyE.exception.AppException;
 import com.example.studyE.exception.ErrorCode;
 import com.example.studyE.repository.UserRepository;
@@ -30,8 +35,18 @@ public class AuthService {
         FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(tokenRequest.getIdToken());
         String uid = decodedToken.getUid();
         Optional<User> optionalUser = userRepository.findByUid(uid);
-        User user = optionalUser.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User user;
 
+        if (optionalUser.isEmpty()) {
+            user = new User();
+            user.setUid(uid);
+            user.setEmail(decodedToken.getEmail());
+            user.setName(decodedToken.getName());
+
+            userRepository.save(user);
+        } else {
+            user = optionalUser.get();
+        }
         String token = jwtUtil.generateToken(user);
 
 
@@ -41,5 +56,51 @@ public class AuthService {
         return AuthenResponse.builder()
                 .token(token)
                 .build();
+    }
+
+    public void registerFirebaseUser(PostUserRequest request) {
+        if (request.getUid() == null || request.getEmail() == null || request.getName() == null) {
+            throw new IllegalArgumentException("Thông tin đăng ký không đầy đủ");
+        }
+
+        if (userRepository.existsByUid(request.getUid())) {
+            throw new IllegalArgumentException("Người dùng đã tồn tại");
+        }
+
+        User user = new User();
+        user.setUid(request.getUid());
+        user.setEmail(request.getEmail());
+        user.setName(request.getName());
+
+        userRepository.save(user);
+    }
+
+    public UserResponse getUserByUid(String uid) {
+        Optional<User> userOpt = userRepository.findByUid(uid);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            return new UserResponse(
+                    user.getEmail(),
+                    user.getName(),
+                    user.getUid(),
+                    user.getPhone(),
+                    user.getDob()
+            );
+        }
+        return null;
+    }
+
+    public void updateUserProfile(UserResponse userDto) {
+        Optional<User> optional = userRepository.findByUid(userDto.getUid());
+        if (optional.isPresent()) {
+            User user = optional.get();
+            user.setEmail(userDto.getEmail());
+            user.setName(userDto.getName());
+            user.setDob(userDto.getDob());
+            user.setPhone(userDto.getPhone());
+            userRepository.save(user);
+        } else {
+            throw new RuntimeException("User not found with UID: " + userDto.getUid());
+        }
     }
 }

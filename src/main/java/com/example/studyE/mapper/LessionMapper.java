@@ -13,6 +13,9 @@ public class LessionMapper {
                 .description(lession.getDescription())
                 .level(lession.getLevel())
                 .imageUrl(lession.getImageUrl())
+                .audioUrl(lession.getAudioUrl())
+                .topicId(lession.getTopic().getId())
+                .topicName(lession.getTopic().getName())
                 .build();
     }
 
@@ -22,7 +25,7 @@ public class LessionMapper {
         lession.setDescription(request.getDescription());
         lession.setLevel(request.getLevel());
         lession.setImageUrl(request.getImageUrl());
-
+        lession.setAudioUrl(request.getAudioUrl());
         return lession;
     }
 }

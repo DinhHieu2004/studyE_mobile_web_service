@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface DialogRepository extends JpaRepository<Dialog, Long> {
-    List<Dialog> findByLessionId(Long lessionId);
+    List<Dialog> findByLessionIdOrderByIdAsc(Long lessionId);
 }
 

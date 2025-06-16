@@ -27,8 +27,10 @@ public class User {
     private String passwordHash;
 
     private String email;
+    String phone;
+    String dob;
 
     @Column(unique = true)
-    private String uid;
+    String uid;
 
 }

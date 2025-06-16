@@ -23,7 +23,7 @@ public class SecurityConfig {
     private UserRepository userRepository;
 
     private final String[] PUBLIC_POST_API = {"/auth/login", "/auth/register"};
-    private final String[] PUBLIC_GET_API = {""};
+    private final String[] PUBLIC_GET_API = {"/dictionary/lookup", "/api/lessions", "/api/lessions/*", "/api/dialogs/**", "/api/vocabularies/**"};
 
 
     @Bean
@@ -31,7 +31,7 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, PUBLIC_POST_API).permitAll()
-                     //   .requestMatchers(HttpMethod.GET, PUBLIC_GET_API).permitAll()
+                        .requestMatchers(HttpMethod.GET, PUBLIC_GET_API).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthFilter(jwtUtil, userRepository), UsernamePasswordAuthenticationFilter.class);
