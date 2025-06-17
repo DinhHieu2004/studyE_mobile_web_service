@@ -3,11 +3,18 @@ package com.example.studyE.controller;
 import com.example.studyE.dto.request.LessionRequest;
 import com.example.studyE.dto.response.LessionResponse;
 import com.example.studyE.dto.response.PageResponse;
+import com.example.studyE.entity.User;
 import com.example.studyE.service.LessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/lessions")
@@ -15,6 +22,34 @@ import org.springframework.web.bind.annotation.*;
 public class LessionController {
 
     private final LessionService lessionService;
+
+    @GetMapping("/watched")
+    public ResponseEntity<List<LessionResponse>> getLessonsWatchedByUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof Map<?,?>)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Map<String, Object> principal = (Map<String, Object>) authentication.getPrincipal();
+        Long userId = Long.valueOf(principal.get("userId").toString());
+
+        List<LessionResponse> lessons = lessionService.getLessonsWatched(userId);
+        return ResponseEntity.ok(lessons);
+    }
+    @PostMapping("/watched")
+    public ResponseEntity<Void> markLessonWatched(@RequestParam("lessonId") Long lessonId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof Map<?,?>)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Map<String, Object> principal = (Map<String, Object>) authentication.getPrincipal();
+        Long userId = Long.valueOf(principal.get("userId").toString());
+        lessionService.markAsWatched(lessonId, userId);
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<LessionResponse> getLessionById(@PathVariable Long id) {

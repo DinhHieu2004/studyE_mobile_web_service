@@ -5,18 +5,24 @@ import com.example.studyE.dto.response.LessionResponse;
 import com.example.studyE.dto.response.PageResponse;
 import com.example.studyE.entity.Lession;
 import com.example.studyE.entity.Topic;
+import com.example.studyE.entity.User;
+import com.example.studyE.entity.UserWatchedLesson;
 import com.example.studyE.exception.AppException;
 import com.example.studyE.exception.ErrorCode;
 import com.example.studyE.mapper.LessionMapper;
 import com.example.studyE.repository.LessionRepository;
 import com.example.studyE.repository.TopicRepository;
+import com.example.studyE.repository.UserRepository;
+import com.example.studyE.repository.UserWatchedLessonRepository;
 import com.example.studyE.service.LessionService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +32,8 @@ public class LessionServiceImpl implements LessionService {
 
     private final LessionRepository lessionRepository;
     private final TopicRepository topicRepository;
+    private final UserWatchedLessonRepository userWatchedLessonRepository;
+    private final UserRepository userRepository;
 
     @Override
     public PageResponse<LessionResponse> getLessionsByTopic(Long topicId, int page, int size) {
@@ -64,6 +72,34 @@ public class LessionServiceImpl implements LessionService {
         return lessionRepository.existsById(id);
     }
 
+    @Override
+    public List<LessionResponse> getLessonsWatched(Long userId) {
+        List<Lession> watchedLessons = userWatchedLessonRepository.findWatchedLessonsByUserId(userId);
+
+        return watchedLessons.stream()
+                .map(LessionMapper::toDto)
+                .collect(Collectors.toList());
+    }
+    @Transactional
+    @Override
+    public void markAsWatched(Long lessonId, Long userId) {
+        Lession lesson = lessionRepository.findById(lessonId)
+                .orElseThrow(() -> new IllegalArgumentException("Lesson not found"));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        boolean alreadyWatched = userWatchedLessonRepository.existsByLesson_IdAndUser_Id(lessonId, userId);
+        if (alreadyWatched) return;
+
+        UserWatchedLesson watched = UserWatchedLesson.builder()
+                .lesson(lesson)
+                .user(user)
+                .viewedAt(LocalDateTime.now())
+                .build();
+        userWatchedLessonRepository.save(watched);
+
+    }
 
     @Override
     public LessionResponse getLessionById(Long id) {

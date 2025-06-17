@@ -22,7 +22,10 @@ public interface LessionService {
 // Lấy toàn bộ danh sách bài học, dùng cho admin hoặc dropdown chọn bài
 
     boolean existsById(Long id);
-// Kiểm tra bài học có tồn tại không (hữu ích khi validate)
+
+    List<LessionResponse> getLessonsWatched(Long userId);
+
+    void markAsWatched(Long lessonId, Long userId);
 
 
 }

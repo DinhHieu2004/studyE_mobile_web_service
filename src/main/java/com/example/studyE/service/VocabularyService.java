@@ -6,5 +6,7 @@ import java.util.List;
 
 public interface VocabularyService {
     List<VocabularyResponse> getVocabularyByLessionId(Long lessionId);
+
+    List<VocabularyResponse> getVocabularyReviewByLessonId(Long lessionId);
 }
 
