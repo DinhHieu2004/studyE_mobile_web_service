@@ -132,7 +132,6 @@ public class DictionaryService {
                     var parts = (List<Map<String, Object>>) content.get("parts");
                     String fullText = (String) parts.get(0).get("text");
 
-                    // Parse theo dòng bắt đầu bằng số thứ tự: 1. ... 2. ...
                     List<String> results = new ArrayList<>();
                     for (String line : fullText.split("\n")) {
                         if (line.matches("^\\d+\\.\\s+.*")) {
@@ -146,7 +145,7 @@ public class DictionaryService {
             e.printStackTrace();
         }
 
-        return Collections.nCopies(texts.size(), ""); // fallback nếu lỗi
+        return Collections.nCopies(texts.size(), "");
     }
 
 }

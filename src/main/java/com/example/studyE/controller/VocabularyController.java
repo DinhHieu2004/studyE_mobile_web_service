@@ -4,10 +4,7 @@ import com.example.studyE.dto.response.VocabularyResponse;
 import com.example.studyE.service.VocabularyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -21,6 +18,10 @@ public class VocabularyController {
     @GetMapping("/lession/{lessionId}")
     public ResponseEntity<List<VocabularyResponse>> getByLession(@PathVariable Long lessionId) {
         return ResponseEntity.ok(vocabularyService.getVocabularyByLessionId(lessionId));
+    }
+    @GetMapping("/review")
+    public List<VocabularyResponse> getVocabularyByLesson(@RequestParam("lessonId") Long lessonId) {
+        return vocabularyService.getVocabularyReviewByLessonId(lessonId);
     }
 }
 
