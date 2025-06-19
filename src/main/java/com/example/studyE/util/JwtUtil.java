@@ -20,6 +20,19 @@ public class JwtUtil {
 
     private final Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
 
+    public static String extractUid(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey("OTabde1FltyqeE78jvxioy3lyxbK2kNkL9UoPkwT4sXr3vMQx9HeQZ0V1jDyLU18".getBytes(StandardCharsets.UTF_8))
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            return claims.getSubject();
+        } catch (Exception e) {
+            throw new RuntimeException("Không thể trích xuất UID từ token", e);
+        }
+    }
+
     public String generateToken(User user) {
         return Jwts.builder()
                 .setSubject(user.getUid())
