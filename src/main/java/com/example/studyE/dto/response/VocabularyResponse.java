@@ -1,20 +1,22 @@
 package com.example.studyE.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
-@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class VocabularyResponse {
-    private Long id;
-    private String word;
-    private String meaning;
-    private String example;
-    private String audioUrl;
-    private String imageUrl;
+    Long id;
+    String word;
+    String meaning;
+    String example;
+    String audioUrl;
+    String imageUrl;
+    String exampleMeaning;
+    String phonetic;
 }
+
 

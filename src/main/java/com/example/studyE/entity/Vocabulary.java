@@ -33,4 +33,9 @@ public class Vocabulary {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lession_id")
     private Lession lession;
+
+    private String phonetic;
+
+    @Column(name = "example_meaning")
+    private String exampleMeaning;
 }

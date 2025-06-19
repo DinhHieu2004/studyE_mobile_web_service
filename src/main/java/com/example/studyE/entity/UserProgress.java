@@ -1,7 +1,10 @@
 package com.example.studyE.entity;
 
+
+
+
 import jakarta.persistence.*;
-import lombok.Getter;
+        import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -33,4 +36,5 @@ public class UserProgress {
     @JoinColumn(name = "lession_id")
     private Lession lession;
 }
+
 
