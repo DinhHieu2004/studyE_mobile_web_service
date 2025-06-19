@@ -14,4 +14,5 @@ public class UserResponse {
     String uid;
     String phone;
     String dob;
+    String subscriptionPlan;
 }

@@ -55,6 +55,7 @@ public class AuthService {
 
         return AuthenResponse.builder()
                 .token(token)
+                .uid(user.getUid())
                 .build();
     }
 
@@ -84,7 +85,8 @@ public class AuthService {
                     user.getName(),
                     user.getUid(),
                     user.getPhone(),
-                    user.getDob()
+                    user.getDob(),
+                    user.getSubscriptionPlan()
             );
         }
         return null;
@@ -103,4 +105,19 @@ public class AuthService {
             throw new RuntimeException("User not found with UID: " + userDto.getUid());
         }
     }
+
+    public void updateSubscription(String uid, String plan) {
+        System.out.println("Updating subscription for UID: " + uid + ", plan: " + plan); // log
+        Optional<User> userOpt = userRepository.findByUid(uid);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setSubscriptionPlan(plan);
+            userRepository.save(user);
+            System.out.println("Updated user: " + user.getSubscriptionPlan()); // log
+        } else {
+            throw new RuntimeException("User not found for subscription update");
+        }
+    }
+
+
 }

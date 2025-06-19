@@ -33,4 +33,6 @@ public class User {
     @Column(unique = true)
     String uid;
 
+    @Column(name = "subscription_plan")
+    String subscriptionPlan;
 }

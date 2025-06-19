@@ -61,5 +61,17 @@ public class AuthController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PostMapping("/updateSubscription")
+    public ResponseEntity<?> updateSubscription(@RequestParam String uid, @RequestParam String plan) {
+        System.out.println(uid + plan);
+        try {
+            authService.updateSubscription(uid, plan);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }
 

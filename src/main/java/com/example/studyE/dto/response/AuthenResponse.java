@@ -13,4 +13,5 @@ import lombok.experimental.FieldDefaults;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AuthenResponse {
     String token;
+    String uid;
 }
