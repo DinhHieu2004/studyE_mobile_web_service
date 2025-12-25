@@ -31,8 +31,10 @@ public class GeminiService {
     SentenceRepository sentenceRepository;
 
     String BASE_URL = "https://generativelanguage.googleapis.com/v1beta/";
-    String API_KEY = "AIzaSyBaGr7-s975QtwVtAE8g6buZri0Gg3yfHA";
-    String MODEL_PATH = "models/gemini-1.5-flash:generateContent";
+
+    String API_KEY = "AIzaSyBFCG1tZ-vsScTTfeo0HlsggGqqmnZYt2M";
+
+    String MODEL_PATH = "models/gemini-2.5-flash:generateContent";
 
     RestTemplate restTemplate;
 

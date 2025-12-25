@@ -22,6 +22,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.HtmlUtils;
 
@@ -52,7 +53,7 @@ public class QuestionService {
 
         Long userId = JwtUtil.getUserIdFromToken();
 
-
+        try {
         Set<String> answeredQuestionContents = new HashSet<>(answerDetailRepository.findAnsweredQuestionTextsByUserId(userId));
 
 
@@ -112,7 +113,14 @@ public class QuestionService {
             }
         }
 
+
         return finalQuestions;
+
+        } catch (HttpClientErrorException.TooManyRequests e) {
+            throw new RuntimeException("Hệ thống câu hỏi đang bận, vui lòng đợi 5 giây.");
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi hệ thống khi lấy câu hỏi.");
+        }
     }
 
     public List<QuizResultResponse> getQuizHistoryUser(LocalDate startDate, LocalDate endDate) {
