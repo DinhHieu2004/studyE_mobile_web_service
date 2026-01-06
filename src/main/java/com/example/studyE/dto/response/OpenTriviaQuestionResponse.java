@@ -12,6 +12,7 @@ import java.util.List;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OpenTriviaQuestionResponse {
+    Long id;
     String category;
     String type;
     String difficulty;

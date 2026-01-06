@@ -14,4 +14,9 @@ public interface QuestionMapper {
     @Mapping(target = "correctAnswer", source = "correctAnswer")
     Question toEntity(OpenTriviaQuestionResponse dto);
 
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "question", source = "content")
+    @Mapping(target = "correctAnswer", source = "correctAnswer")
+    OpenTriviaQuestionResponse toResponse(Question question);
+
 }
