@@ -17,6 +17,6 @@ public class LessionResponse {
     private String imageUrl;
     private Long topicId;
     private String topicName;
-    private String audioUrl;
+    private String status;
 }
 

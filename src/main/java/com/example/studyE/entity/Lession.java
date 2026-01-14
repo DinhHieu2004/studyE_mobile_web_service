@@ -34,4 +34,6 @@ public class Lession {
 
     @Column(name = "audio_url")
     private String audioUrl;
+
+    private String status;
 }
