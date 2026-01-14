@@ -23,6 +23,4 @@ public class Topic {
     private String imagePath;
 
     private String description;
-
-    private String level;
 }
