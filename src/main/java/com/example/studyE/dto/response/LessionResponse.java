@@ -15,6 +15,7 @@ public class LessionResponse {
     private String description;
     private String level;
     private String imageUrl;
+    private String audioUrl;
     private Long topicId;
     private String topicName;
     private String status;

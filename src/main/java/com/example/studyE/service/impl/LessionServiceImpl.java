@@ -148,4 +148,36 @@ public class LessionServiceImpl implements LessionService {
         }
         lessionRepository.deleteById(id);
     }
+
+    @Override
+    public PageResponse<LessionResponse> getLessions(Long topicId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Lession> lessionPage;
+
+        if (topicId == null) {
+            lessionPage = lessionRepository.findAll(pageable);
+        } else {
+            Topic topic = topicRepository.findById(topicId)
+                    .orElseThrow(() -> new AppException(
+                            ErrorCode.TOPIC_NOT_FOUND,
+                            "Topic not found with id = " + topicId
+                    ));
+            lessionPage = lessionRepository.findAllByTopic(topic, pageable);
+        }
+
+        List<LessionResponse> items = lessionPage.getContent()
+                .stream()
+                .map(LessionMapper::toDto)
+                .toList();
+
+        return PageResponse.<LessionResponse>builder()
+                .pageNo(page)
+                .pageSize(size)
+                .totalPage(lessionPage.getTotalPages())
+                .totalItems(lessionPage.getTotalElements())
+                .isLast(lessionPage.isLast())
+                .items(items)
+                .build();
+    }
 }
