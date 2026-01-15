@@ -23,5 +23,9 @@ public class VocabularyController {
     public List<VocabularyResponse> getVocabularyByLesson(@RequestParam("lessonId") Long lessonId) {
         return vocabularyService.getVocabularyReviewByLessonId(lessonId);
     }
+    @GetMapping("/review2")
+    public List<VocabularyResponse> getVocabularyByTopicV(@RequestParam("topicId") Long topicId) {
+        return vocabularyService.getVocabularyReviewByTopicId(topicId);
+    }
 }
 
