@@ -27,6 +27,6 @@ public interface LessionService {
 
     void markAsWatched(Long lessonId, Long userId);
 
-
+    PageResponse<LessionResponse> getLessions(Long topicId, int page, int size);
 }
 

@@ -8,6 +8,7 @@ public class LessionRequest {
     private String description;
     private String level;
     private String imageUrl;
+    private String audioUrl;
     private Long topicId;
     private String status;
 }

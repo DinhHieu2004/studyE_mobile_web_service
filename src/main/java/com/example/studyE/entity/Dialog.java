@@ -21,6 +21,7 @@ public class Dialog {
 
     private String speaker;
 
+    @Column(name = "content", length = 5000, columnDefinition = "varchar(5000)")
     private String content;
 
     @Column(name = "audio_url")

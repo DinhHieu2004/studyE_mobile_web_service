@@ -80,12 +80,12 @@ public class LessionController {
 
 
     @GetMapping
-    public ResponseEntity<PageResponse<LessionResponse>> getLessionsByTopic(
-            @RequestParam Long topicId,
+    public ResponseEntity<PageResponse<LessionResponse>> getLessions(
+            @RequestParam(required = false) Long topicId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "50") int size
     ) {
-        PageResponse<LessionResponse> response = lessionService.getLessionsByTopic(topicId, page, size);
+        PageResponse<LessionResponse> response = lessionService.getLessions(topicId, page, size);
         return ResponseEntity.ok(response);
     }
 }
