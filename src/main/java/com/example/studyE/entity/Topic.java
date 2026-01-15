@@ -20,7 +20,7 @@ public class Topic {
     private String name;
 
     @Column(name = "image_url")
-    private String imageUrl;
+    private String imagePath;
 
     private String description;
 }
