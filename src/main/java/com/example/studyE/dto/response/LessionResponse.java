@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -19,5 +21,7 @@ public class LessionResponse {
     private Long topicId;
     private String topicName;
     private String status;
+    private String progressStatus;
+    private LocalDateTime completedAt;
 }
 

@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserWatchedLessonRepository extends JpaRepository<UserWatchedLesson, Long> {
@@ -18,5 +19,18 @@ public interface UserWatchedLessonRepository extends JpaRepository<UserWatchedLe
     List<Lession> findWatchedLessonsByUserId(@Param("userId") Long userId);
 
     boolean existsByLesson_IdAndUser_Id(Long lessonId, Long userId);
+
+    Optional<UserWatchedLesson> findByLesson_IdAndUser_Id(Long lessonId, Long userId);
+
+    List<UserWatchedLesson> findByUser_IdAndLesson_IdIn(Long userId, List<Long> lessonIds);
+
+    @Query("""
+    select uwl
+    from UserWatchedLesson uwl
+    where uwl.user.id = :userId and uwl.status = com.example.studyE.entity.ProgressStatus.DONE
+    order by uwl.completedAt desc
+""")
+    List<UserWatchedLesson> findDoneHistory(@Param("userId") Long userId);
+
 
 }

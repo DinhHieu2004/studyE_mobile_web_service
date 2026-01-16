@@ -3,10 +3,7 @@ package com.example.studyE.service.impl;
 import com.example.studyE.dto.request.LessionRequest;
 import com.example.studyE.dto.response.LessionResponse;
 import com.example.studyE.dto.response.PageResponse;
-import com.example.studyE.entity.Lession;
-import com.example.studyE.entity.Topic;
-import com.example.studyE.entity.User;
-import com.example.studyE.entity.UserWatchedLesson;
+import com.example.studyE.entity.*;
 import com.example.studyE.exception.AppException;
 import com.example.studyE.exception.ErrorCode;
 import com.example.studyE.mapper.LessionMapper;
@@ -23,7 +20,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -89,17 +89,80 @@ public class LessionServiceImpl implements LessionService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        boolean alreadyWatched = userWatchedLessonRepository.existsByLesson_IdAndUser_Id(lessonId, userId);
-        if (alreadyWatched) return;
+        var now = LocalDateTime.now();
 
-        UserWatchedLesson watched = UserWatchedLesson.builder()
-                .lesson(lesson)
-                .user(user)
-                .viewedAt(LocalDateTime.now())
-                .build();
-        userWatchedLessonRepository.save(watched);
+        UserWatchedLesson progress = userWatchedLessonRepository
+                .findByLesson_IdAndUser_Id(lessonId, userId)
+                .orElse(null);
 
+        if (progress == null) {
+            progress = UserWatchedLesson.builder()
+                    .lesson(lesson)
+                    .user(user)
+                    .viewedAt(now)
+                    .status(ProgressStatus.IN_PROGRESS)
+                    .updatedAt(now)
+                    .build();
+        } else {
+            progress.setUpdatedAt(now);
+            if (progress.getStatus() == null) progress.setStatus(ProgressStatus.IN_PROGRESS);
+            if (progress.getViewedAt() == null) progress.setViewedAt(now);
+        }
+
+        userWatchedLessonRepository.save(progress);
     }
+
+    @Transactional
+    @Override
+    public void markAsDone(Long lessonId, Long userId) {
+        Lession lesson = lessionRepository.findById(lessonId)
+                .orElseThrow(() -> new IllegalArgumentException("Lesson not found"));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        var now = LocalDateTime.now();
+
+        UserWatchedLesson progress = userWatchedLessonRepository
+                .findByLesson_IdAndUser_Id(lessonId, userId)
+                .orElse(null);
+
+        if (progress == null) {
+            progress = UserWatchedLesson.builder()
+                    .lesson(lesson)
+                    .user(user)
+                    .viewedAt(now)
+                    .status(ProgressStatus.DONE)
+                    .completedAt(now)
+                    .updatedAt(now)
+                    .build();
+        } else {
+            progress.setStatus(ProgressStatus.DONE);
+            if (progress.getViewedAt() == null) progress.setViewedAt(now);
+            progress.setCompletedAt(now);
+            progress.setUpdatedAt(now);
+        }
+
+        userWatchedLessonRepository.save(progress);
+    }
+
+    @Override
+    public List<LessionResponse> getLessonsDoneHistory(Long userId) {
+        List<UserWatchedLesson> rows = userWatchedLessonRepository.findDoneHistory(userId);
+
+        return rows.stream().map(uwl -> {
+            Lession lesson = uwl.getLesson();
+
+            LessionResponse res = LessionMapper.toDto(lesson);
+
+            res.setProgressStatus("DONE");
+            res.setCompletedAt(uwl.getCompletedAt());
+
+            return res;
+        }).toList();
+    }
+
+
 
     @Override
     public LessionResponse getLessionById(Long id) {
@@ -150,7 +213,25 @@ public class LessionServiceImpl implements LessionService {
     }
 
     @Override
-    public PageResponse<LessionResponse> getLessions(Long topicId, int page, int size) {
+    public LessionResponse getLessionById(Long id, Long userId) {
+        Lession lession = lessionRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.LESSON_NOT_FOUND, "Lession not found with id = " + id));
+
+        LessionResponse dto = LessionMapper.toDto(lession);
+
+        if (userId != null) {
+            userWatchedLessonRepository.findByLesson_IdAndUser_Id(id, userId).ifPresent(p -> {
+                dto.setProgressStatus(p.getStatus().name());   // DONE / IN_PROGRESS
+                dto.setCompletedAt(p.getCompletedAt());
+            });
+        }
+
+        return dto;
+    }
+
+
+    @Override
+    public PageResponse<LessionResponse> getLessions(Long topicId, int page, int size, Long userId) {
         Pageable pageable = PageRequest.of(page, size);
 
         Page<Lession> lessionPage;
@@ -166,10 +247,33 @@ public class LessionServiceImpl implements LessionService {
             lessionPage = lessionRepository.findAllByTopic(topic, pageable);
         }
 
-        List<LessionResponse> items = lessionPage.getContent()
-                .stream()
-                .map(LessionMapper::toDto)
-                .toList();
+        List<Lession> lessons = lessionPage.getContent();
+
+        Map<Long, UserWatchedLesson> progressMap;
+        if (userId != null && !lessons.isEmpty()) {
+            List<Long> ids = lessons.stream().map(Lession::getId).toList();
+            progressMap = userWatchedLessonRepository
+                    .findByUser_IdAndLesson_IdIn(userId, ids)
+                    .stream()
+                    .collect(Collectors.toMap(
+                            p -> p.getLesson().getId(),
+                            Function.identity(),
+                            (a, b) -> a
+                    ));
+        } else {
+            progressMap = Collections.emptyMap();
+        }
+
+        List<LessionResponse> items = lessons.stream().map(lesson -> {
+            LessionResponse dto = LessionMapper.toDto(lesson);
+
+            UserWatchedLesson p = progressMap.get(lesson.getId());
+            if (p != null) {
+                dto.setProgressStatus(p.getStatus().name());
+                dto.setCompletedAt(p.getCompletedAt());
+            }
+            return dto;
+        }).toList();
 
         return PageResponse.<LessionResponse>builder()
                 .pageNo(page)

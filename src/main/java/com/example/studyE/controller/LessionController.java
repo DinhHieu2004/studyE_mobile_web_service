@@ -3,13 +3,11 @@ package com.example.studyE.controller;
 import com.example.studyE.dto.request.LessionRequest;
 import com.example.studyE.dto.response.LessionResponse;
 import com.example.studyE.dto.response.PageResponse;
-import com.example.studyE.entity.User;
 import com.example.studyE.service.LessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,10 +49,33 @@ public class LessionController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<LessionResponse> getLessionById(@PathVariable Long id) {
-        LessionResponse response = lessionService.getLessionById(id);
-        return ResponseEntity.ok(response);
+    @PostMapping("/done")
+    public ResponseEntity<Void> markLessonDone(@RequestParam("lessonId") Long lessonId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof Map<?,?>)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Map<String, Object> principal = (Map<String, Object>) authentication.getPrincipal();
+        Long userId = Long.valueOf(principal.get("userId").toString());
+
+        lessionService.markAsDone(lessonId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/history/done")
+    public ResponseEntity<List<LessionResponse>> getDoneHistory() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof Map<?,?>)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Map<String, Object> principal = (Map<String, Object>) authentication.getPrincipal();
+        Long userId = Long.valueOf(principal.get("userId").toString());
+
+        return ResponseEntity.ok(lessionService.getLessonsDoneHistory(userId));
     }
 
     @PostMapping
@@ -85,7 +106,30 @@ public class LessionController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size
     ) {
-        PageResponse<LessionResponse> response = lessionService.getLessions(topicId, page, size);
-        return ResponseEntity.ok(response);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Long userId = null;
+        if (authentication != null && authentication.getPrincipal() instanceof Map<?, ?> principal) {
+            userId = Long.valueOf(principal.get("userId").toString());
+        }
+        System.out.println("HIT getLessions userId=" + userId);
+
+        return ResponseEntity.ok(lessionService.getLessions(topicId, page, size, userId));
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<LessionResponse> getLessionById(@PathVariable Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Long userId = null;
+        if (authentication != null && authentication.getPrincipal() instanceof Map<?, ?> principal) {
+            userId = Long.valueOf(principal.get("userId").toString());
+        }
+
+        System.out.println("HIT getLessionById id=" + id + " userId=" + userId);
+
+        return ResponseEntity.ok(lessionService.getLessionById(id, userId));
+    }
+
+
 }
