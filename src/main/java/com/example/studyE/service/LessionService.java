@@ -15,8 +15,9 @@ public interface LessionService {
 
     void deleteLession(Long id);
 
-    PageResponse<LessionResponse> getLessionsByTopic(Long topicId, int page, int size);
+    LessionResponse getLessionById(Long id, Long userId);
 
+    PageResponse<LessionResponse> getLessionsByTopic(Long topicId, int page, int size);
 
     List<LessionResponse> getAllLessions();
 // Lấy toàn bộ danh sách bài học, dùng cho admin hoặc dropdown chọn bài
@@ -27,6 +28,11 @@ public interface LessionService {
 
     void markAsWatched(Long lessonId, Long userId);
 
-    PageResponse<LessionResponse> getLessions(Long topicId, int page, int size);
+    public PageResponse<LessionResponse> getLessions(Long topicId, int page, int size, Long userId);
+
+    void markAsDone(Long lessonId, Long userId);
+
+    List<LessionResponse> getLessonsDoneHistory(Long userId);
+
 }
 
