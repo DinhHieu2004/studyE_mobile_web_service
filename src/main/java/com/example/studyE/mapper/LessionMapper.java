@@ -17,6 +17,7 @@ public class LessionMapper {
                 .topicId(lession.getTopic().getId())
                 .topicName(lession.getTopic().getName())
                 .status(lession.getStatus())
+                .isPremium(lession.isPremium())
                 .build();
     }
 
