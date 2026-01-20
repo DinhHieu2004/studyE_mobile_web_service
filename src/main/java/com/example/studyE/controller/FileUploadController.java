@@ -18,15 +18,19 @@ public class FileUploadController {
     private final FileUploadService fileUploadService;
 
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> uploadFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "type", required = false) String type
+    ) {
         try {
-            String imageUrl = fileUploadService.uploadImage(file);
-            return ResponseEntity.ok(imageUrl);
+            String url = fileUploadService.upload(file, type);
+            return ResponseEntity.ok(url);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Upload failed: " + e.getMessage());
         }
     }
 
+    // upload nhiều ảnh
     @PostMapping("/uploads")
     public ResponseEntity<List<String>> uploadImages(@RequestParam("files") MultipartFile[] files) {
         try {
