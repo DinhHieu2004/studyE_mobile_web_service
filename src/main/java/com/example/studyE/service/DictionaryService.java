@@ -18,7 +18,7 @@ public class DictionaryService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final Client geminiClient;
     private static final String GEMINI_API_KEY =
-            "AIzaSyC4-W2RQYPBFrge50TdEhVP_4T_ipXeusc";
+            "AIzaSyAGnrlJ5hpKqyk3nJf3Q1VWn56hFLOd_7A";
     private final String dictionaryApiUrl =
     "https://api.dictionaryapi.dev/api/v2/entries/en/";
 
