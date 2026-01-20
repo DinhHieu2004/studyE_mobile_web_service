@@ -1,14 +1,15 @@
 package com.example.studyE.service.impl;
 
 import com.example.studyE.dto.response.TopicHomeResponse;
+import com.example.studyE.dto.response.UnlockableVocabularyResponse;
+import com.example.studyE.dto.response.VocabularyCardPreviewDTO;
 import com.example.studyE.dto.response.VocabularyResponse;
-import com.example.studyE.repository.TopicVocabularyRepository;
-import com.example.studyE.repository.VocabularyCardRepository;
+import com.example.studyE.entity.UserVocabularyUnlock;
+import com.example.studyE.entity.VocabularyCard;
+import com.example.studyE.repository.*;
 
 import com.example.studyE.entity.Dialog;
-import com.example.studyE.repository.DialogRepository;
 
-import com.example.studyE.repository.VocabularyRepository;
 import com.example.studyE.service.VocabularyService;
 import com.example.studyE.util.DictionaryClient;
 import com.example.studyE.util.MyMemoryTranslateClient;
@@ -17,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +29,7 @@ public class VocabularyServiceImpl implements VocabularyService {
     private final VocabularyRepository vocabularyRepository;
 
     private final VocabularyCardRepository vocabularyCardRepository;
+    private final UserVocabularyUnlockRepository userVocabularyUnlockRepository;
 
     private final DialogRepository dialogRepository;
     private final DictionaryClient dictionaryClient;
@@ -45,6 +49,32 @@ public class VocabularyServiceImpl implements VocabularyService {
                         .build())
                 .toList();
     }
+
+    @Override
+    public List<VocabularyCardPreviewDTO> getVocabularyAlls() {
+
+        return vocabularyCardRepository.findAll()
+                .stream()
+                .map(e -> {
+                    VocabularyCardPreviewDTO dto = new VocabularyCardPreviewDTO();
+                    dto.setId(e.getId());
+                    dto.setWord(e.getWord());
+                    dto.setMeaning(e.getMeaning());
+                    dto.setPhonetic(e.getPhonetic());
+                    dto.setExample(e.getExample());
+                    dto.setExampleMeaning(e.getExampleMeaning());
+                    dto.setImageUrl(e.getImageUrl());
+                    dto.setAudioUrl(e.getAudioUrl());
+
+                    if (e.getTopic() != null) {
+                        dto.setTopicId(e.getTopic().getId());
+                    }
+                    return dto;
+                })
+                .toList();
+    }
+
+
     @Override
     public List<VocabularyResponse> getVocabularyReviewByLessonId(Long lessonId) {
 
@@ -89,19 +119,82 @@ public class VocabularyServiceImpl implements VocabularyService {
     }
 
     @Override
-    public List<VocabularyResponse> getVocabularyReviewByTopicId(Long topicId) {
-        return vocabularyCardRepository.findByTopicId(topicId).stream()
-                .map(vocab -> VocabularyResponse.builder()
-                        .id(vocab.getId())
-                        .word(vocab.getWord())
-                        .phonetic(vocab.getPhonetic())
-                        .imageUrl(vocab.getImageUrl())
-                        .audioUrl(vocab.getAudioUrl())
-                        .meaning(vocab.getMeaning())
-                        .example(vocab.getExample())
-                        .exampleMeaning(vocab.getExampleMeaning())
-                        .build())
+    public List<VocabularyResponse> getVocabularyReviewByTopicId(
+            Long topicId,
+            Long uid
+    ) {
+        return userVocabularyUnlockRepository
+                .findUnlockedByUserAndTopic(uid, topicId)
+                .stream()
+                .map(uv -> {
+                    VocabularyCard v = uv.getVocabulary();
+                    return VocabularyResponse.builder()
+                            .id(v.getId())
+                            .word(v.getWord())
+                            .phonetic(v.getPhonetic())
+                            .imageUrl(v.getImageUrl())
+                            .audioUrl(v.getAudioUrl())
+                            .meaning(v.getMeaning())
+                            .example(v.getExample())
+                            .exampleMeaning(v.getExampleMeaning())
+                            .build();
+                })
                 .toList();
     }
+    @Override
+    public List<UnlockableVocabularyResponse> getVocabularyUnlockable(
+            Long topicId,
+            Long userId
+    ) {
+        List<VocabularyCard> vocabularies =
+                vocabularyCardRepository.findByTopicId(topicId);
+
+        if (vocabularies.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> vocabIds = vocabularies.stream()
+                .map(VocabularyCard::getId)
+                .toList();
+
+        List<UserVocabularyUnlock> unlocks =
+                userVocabularyUnlockRepository
+                        .findByUserIdAndVocabularyId(userId, vocabIds);
+
+        Map<Long, UserVocabularyUnlock> unlockMap =
+                unlocks.stream()
+                        .collect(Collectors.toMap(
+                                u -> u.getVocabulary().getId(),
+                                u -> u
+                        ));
+
+        return vocabularies.stream().map(vocab -> {
+
+            UserVocabularyUnlock unlock = unlockMap.get(vocab.getId());
+
+            if (unlock == null || !unlock.isUnlocked()) {
+                return UnlockableVocabularyResponse.builder()
+                        .id(vocab.getId())
+                        .unlocked(false)
+                        .remainingAttempts(
+                                unlock != null ? unlock.getRemainingAttempts() : 3
+                        )
+                        .lockedUntil(
+                                unlock != null ? unlock.getLockedUntil() : null
+                        )
+                        .build();
+            }
+
+            return UnlockableVocabularyResponse.builder()
+                    .id(vocab.getId())
+                    .unlocked(true)
+                    .word(vocab.getWord())
+                    .phonetic(vocab.getPhonetic())
+                    .imageUrl(vocab.getImageUrl())
+                    .build();
+
+        }).toList();
+    }
+
 }
 
