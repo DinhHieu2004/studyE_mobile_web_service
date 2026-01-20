@@ -34,5 +34,8 @@ public interface LessionService {
 
     List<LessionResponse> getLessonsDoneHistory(Long userId);
 
+    LessionResponse getLessionByIdForAdmin(Long id);
+
+    PageResponse<LessionResponse> getLessionsForAdmin(Long topicId, String q, String status, Boolean premium, String level, int page, int size);
 }
 

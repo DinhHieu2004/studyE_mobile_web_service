@@ -29,6 +29,8 @@ public class LessionMapper {
         lession.setImageUrl(request.getImageUrl());
         lession.setAudioUrl(request.getAudioUrl());
         lession.setStatus(request.getStatus());
+
+        lession.setPremium(Boolean.TRUE.equals(request.getPremium()));
         return lession;
     }
 }
