@@ -1,6 +1,7 @@
 package com.example.studyE.controller;
 
 import com.example.studyE.dto.request.UnlockConfirmRequest;
+import com.example.studyE.dto.request.VocabularyUpdateRequest;
 import com.example.studyE.dto.response.UnlockQuestionDTO;
 import com.example.studyE.dto.response.UnlockableVocabularyResponse;
 import com.example.studyE.dto.response.VocabularyCardPreviewDTO;
@@ -90,6 +91,14 @@ public class VocabularyController {
                 req.getQuestionId(),
                 req.getAnswerIndex()
         );
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> update(
+            @PathVariable Long id,
+            @RequestBody VocabularyUpdateRequest req
+    ) {
+        previewService.update(id, req);
+        return ResponseEntity.ok().build();
     }
 
     private Long getCurrentUserId() {
