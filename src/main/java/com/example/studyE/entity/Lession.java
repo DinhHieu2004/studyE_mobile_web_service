@@ -36,4 +36,6 @@ public class Lession {
     private String audioUrl;
 
     private String status;
+
+    private boolean isPremium;
 }

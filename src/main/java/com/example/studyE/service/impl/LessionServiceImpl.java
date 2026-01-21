@@ -17,13 +17,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -162,6 +166,63 @@ public class LessionServiceImpl implements LessionService {
         }).toList();
     }
 
+    @Override
+    public PageResponse<LessionResponse> getLessionsForAdmin(
+            Long topicId, String q, String status, Boolean premium, String level, int page, int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Specification<Lession> spec = (root, query, cb) -> {
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+
+            if (topicId != null) {
+                predicates.add(cb.equal(root.get("topic").get("id"), topicId));
+            }
+            if (status != null && !status.isBlank()) {
+                predicates.add(cb.equal(root.get("status"), status.trim()));
+            }
+            if (premium != null) {
+                predicates.add(cb.equal(root.get("isPremium"), premium));
+            }
+            if (level != null && !level.isBlank()) {
+                predicates.add(cb.equal(root.get("level"), level.trim()));
+            }
+            if (q != null && !q.isBlank()) {
+                String kw = "%" + q.trim().toLowerCase() + "%";
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("title")), kw),
+                        cb.like(cb.lower(root.get("description")), kw),
+                        cb.like(cb.lower(root.get("topic").get("name")), kw)
+                ));
+            }
+
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+
+        Page<Lession> p = lessionRepository.findAll(spec, pageable);
+
+        List<LessionResponse> items = p.getContent()
+                .stream()
+                .map(LessionMapper::toDto)
+                .toList();
+
+        return PageResponse.<LessionResponse>builder()
+                .pageNo(page)
+                .pageSize(size)
+                .totalPage(p.getTotalPages())
+                .totalItems(p.getTotalElements())
+                .isLast(p.isLast())
+                .items(items)
+                .build();
+    }
+
+    @Override
+    public LessionResponse getLessionByIdForAdmin(Long id) {
+        Lession lession = lessionRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.LESSON_NOT_FOUND, "Lession not found with id = " + id));
+        return LessionMapper.toDto(lession);
+    }
+
 
 
     @Override
@@ -197,6 +258,7 @@ public class LessionServiceImpl implements LessionService {
         lession.setLevel(request.getLevel());
         lession.setImageUrl(request.getImageUrl());
         lession.setTopic(topic);
+        lession.setPremium(Boolean.TRUE.equals(request.getPremium()));
 
         lessionRepository.save(lession);
 
@@ -221,7 +283,7 @@ public class LessionServiceImpl implements LessionService {
 
         if (userId != null) {
             userWatchedLessonRepository.findByLesson_IdAndUser_Id(id, userId).ifPresent(p -> {
-                dto.setProgressStatus(p.getStatus().name());   // DONE / IN_PROGRESS
+                dto.setProgressStatus(p.getStatus().name());
                 dto.setCompletedAt(p.getCompletedAt());
             });
         }

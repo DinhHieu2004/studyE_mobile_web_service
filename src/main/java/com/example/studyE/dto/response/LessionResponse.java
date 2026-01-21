@@ -23,5 +23,7 @@ public class LessionResponse {
     private String status;
     private String progressStatus;
     private LocalDateTime completedAt;
+    private boolean isPremium;
+
 }
 
