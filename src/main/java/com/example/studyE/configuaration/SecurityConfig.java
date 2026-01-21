@@ -27,9 +27,9 @@ public class SecurityConfig {
     @Autowired
     private UserRepository userRepository;
 
-    private final String[] PUBLIC_POST_API = {"/auth/login", "/auth/signUp", "/api/payment/**"};
+    private final String[] PUBLIC_POST_API = {"/auth/login", "/auth/signUp", "/api/payment/**", "/api/files/**" };
     private final String[] PUBLIC_GET_API = {"/dictionary/lookup", "/api/lessions", "/api/lessions/*",
-            "/api/dialogs/**", "/api/vocabularies/**", "/api/subscriptions/**", "/api/payment/**", "/api/home/**"};
+            "/api/dialogs/**", "/api/vocabularies/**", "/api/subscriptions/**", "/api/payment/**", "/api/home/**", "/api/admin/**", "/api/files/**" };
 
 
     @Bean
