@@ -9,6 +9,7 @@ import java.util.List;
 @Repository
 public interface VocabularyCardRepository extends JpaRepository<VocabularyCard, Long> {
     List<VocabularyCard> findByTopicId(Long topicId);
+
 }
 
 
